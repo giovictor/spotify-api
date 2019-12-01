@@ -9,7 +9,9 @@ dotenv.config()
 app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {
-    res.render('pages/index')
+    let access_token = req.query.access_token || null
+    res.render('pages/index', {access_token})
+    
 })
 
 app.get('/spotifylogin', (req, res) => {
