@@ -6,19 +6,19 @@ class HomePage extends Component {
     constructor(props) {
         super(props) 
         this.state = {
-            access_token:'',
-            refresh_token:''
+            access_token:localStorage.getItem('access_token') || null,
+            refresh_token:localStorage.getItem('refresh_token') || null,
         }
     }
 
     componentDidMount() {
         this.retrieveTokens()
         this.getLoggedInUserData()
-        console.log(this.state)
     }
 
     getLoggedInUserData = () => {
-        let access_token = this.state.access_token
+        console.log(this.state.access_token)
+        let access_token = 'BQCMhsE1GQt8OArgNWCDXoon4HsZEHYjfm_-d5gXs_F1AgARfq3JilmunIx2Gs_YAkPdoAst_iuRz4cWqQ59b0j5j-t3O26lBFfSXqNLfL5Hs8mG_URmZ0ypEntU13qZjr_2baqtJjVKmRPIBwhRHjBQo5ENKCsMcQ'
         axios.get('https://api.spotify.com/v1/me', null, {
             headers: { 'Authorization':`Bearer ${access_token}`}
         })
@@ -28,7 +28,6 @@ class HomePage extends Component {
         .catch(err => {
             console.log(err)
         })
-        console.log(access_token)
     }
 
     retrieveTokens = () => {
@@ -36,15 +35,8 @@ class HomePage extends Component {
             let { access_token, refresh_token } = qs.parse(this.props.location.search)
             localStorage.setItem('access_token', access_token)
             localStorage.setItem('refresh_token', refresh_token)
-
-            this.setState({access_token})
-            this.setState({refresh_token})
-        } else {
-            this.setState({access_token:localStorage.getItem('access_token')})
-            this.setState({refresh_token:localStorage.getItem('refresh_token')})
+            this.setState({access_token, refresh_token})
         }
-
-
     }
 
     render() {
