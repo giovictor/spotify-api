@@ -2,17 +2,11 @@ const express = require('express')
 const app = express()
 const dotenv = require('dotenv')
 const axios = require('axios')
-const qs = require('qs')
+const cors = require('cors')
 
 dotenv.config()
-
+app.use(cors())
 app.set('view engine', 'ejs')
-
-app.get('/', (req, res) => {
-    let access_token = req.query.access_token || null
-    res.render('pages/index', {access_token})
-    
-})
 
 app.get('/spotifylogin', (req, res) => {
     let client_id = process.env.CLIENT_ID
@@ -25,6 +19,7 @@ app.get('/spotifyredirect', (req, res) => {
         let code = req.query.code
         let base64clientkey = process.env.CLIENT_KEY
         let redirect_uri = encodeURIComponent(process.env.REDIRECT_URI)
+        let client_redirect_uri = process.env.CLIENT_REDIRECT_URI
         let config = {
             headers: { 
                 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
@@ -34,7 +29,7 @@ app.get('/spotifyredirect', (req, res) => {
         
         axios.post(`https://accounts.spotify.com/api/token?grant_type=authorization_code&code=${code}&redirect_uri=${redirect_uri}`, null, config)
         .then(response => {
-            res.redirect(`/?access_token=${response.data.access_token}`)
+            res.redirect(`${client_redirect_uri}/?access_token=${response.data.access_token}&refresh_token=${response.data.refresh_token}`)
         })
         .catch(err => {
             console.log(err)
@@ -42,7 +37,7 @@ app.get('/spotifyredirect', (req, res) => {
     }
 })
 
-app.listen(9000, () => {
-    console.log('Server connected to port 9000!')
+app.listen(4000, () => {
+    console.log('Server connected to port 4000!')
 })
 
