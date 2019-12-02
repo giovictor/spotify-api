@@ -1,6 +1,7 @@
 import React, {Component} from 'react'
 import axios from 'axios'
 import qs from 'query-string'
+import { access } from 'fs'
 
 class HomePage extends Component {
     constructor(props) {
@@ -8,6 +9,7 @@ class HomePage extends Component {
         this.state = {
             access_token:localStorage.getItem('access_token') || null,
             refresh_token:localStorage.getItem('refresh_token') || null,
+            loggedInUser:{}
         }
     }
 
@@ -17,16 +19,18 @@ class HomePage extends Component {
     }
 
     getLoggedInUserData = () => {
-        console.log(this.state.access_token)
-        let access_token = 'BQCMhsE1GQt8OArgNWCDXoon4HsZEHYjfm_-d5gXs_F1AgARfq3JilmunIx2Gs_YAkPdoAst_iuRz4cWqQ59b0j5j-t3O26lBFfSXqNLfL5Hs8mG_URmZ0ypEntU13qZjr_2baqtJjVKmRPIBwhRHjBQo5ENKCsMcQ'
-        axios.get('https://api.spotify.com/v1/me', null, {
-            headers: { 'Authorization':`Bearer ${access_token}`}
-        })
+        let config = {
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        }
+        axios.get('https://api.spotify.com/v1/me',config)
         .then(response => {
             console.log(response)
+            this.setState({loggedInUser:response.data})
         })
         .catch(err => {
-            console.log(err)
+            console.log(err.response)
         })
     }
 
@@ -40,11 +44,15 @@ class HomePage extends Component {
     }
 
     render() {
+        const { access_token, loggedInUser } = this.state
         return (
             <div className="App">
                 <header className="App-header">
                     <p>Spotify Client</p>
-                    <a className="App-link" href="http://localhost:4000/spotifylogin">Login with Spotify</a>
+                        { access_token != null ?
+                            <p>Welcome {loggedInUser.display_name}</p> :
+                            <a className="App-link" href="http://localhost:4000/spotifylogin">Login with Spotify</a>
+                        }
                 </header>
             </div>
         );
