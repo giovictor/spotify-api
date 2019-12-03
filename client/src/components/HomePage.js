@@ -1,7 +1,9 @@
 import React, {Component} from 'react'
 import axios from 'axios'
 import qs from 'query-string'
-import { access } from 'fs'
+
+import Login from './Login'
+import Playlist from './Playlist'
 
 class HomePage extends Component {
     constructor(props) {
@@ -9,7 +11,8 @@ class HomePage extends Component {
         this.state = {
             access_token:localStorage.getItem('access_token') || null,
             refresh_token:localStorage.getItem('refresh_token') || null,
-            loggedInUser:{}
+            loggedInUser:{},
+            tracks:[]
         }
     }
 
@@ -26,12 +29,34 @@ class HomePage extends Component {
         }
         axios.get('https://api.spotify.com/v1/me',config)
         .then(response => {
-            console.log(response)
             this.setState({loggedInUser:response.data})
         })
         .catch(err => {
             console.log(err.response)
         })
+    }
+
+    searchSong = (keyword) => {
+        if(keyword != '') {
+            let config = {
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            }
+
+            let q = encodeURIComponent(keyword)
+
+            axios.get(`https://api.spotify.com/v1/search?q=${q}&type=track`, config)
+            .then(response => {
+                console.log(response.data.tracks.items[0])
+                this.setState({tracks:response.data.tracks.items})
+            })
+            .catch(err =>{
+                console.log(err.response)
+            })
+        } else {
+            this.setState({tracks:[]})
+        }
     }
 
     retrieveTokens = () => {
@@ -44,16 +69,11 @@ class HomePage extends Component {
     }
 
     render() {
-        const { access_token, loggedInUser } = this.state
+        const { access_token, loggedInUser, tracks } = this.state
         return (
             <div className="App">
-                <header className="App-header">
-                    <p>Spotify Client</p>
-                        { access_token != null ?
-                            <p>Welcome {loggedInUser.display_name}</p> :
-                            <a className="App-link" href="http://localhost:4000/spotifylogin">Login with Spotify</a>
-                        }
-                </header>
+                <p>Spotify Client</p>
+                { access_token != null ? <Playlist loggedInUser={loggedInUser} searchSong={this.searchSong} tracks={tracks}/> : <Login/> }
             </div>
         );
     }
